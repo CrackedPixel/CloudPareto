@@ -9,6 +9,11 @@ Cloud Pareto is a small business with a goal for expanding to a global market. W
 - edit the account id in `serverless.yml` (line 10)
 - (optional) change the service name in `serverless.yml` (line 1)
 - `sls deploy` to deploy to AWS. Optionally, use `--stage="example"` to change environments
+- Upload csv files to the appropriate S3 folder for triggers. Structure below:
+  - Inventory: S3/data-files/inventory/*.csv
+  - Product: S3/data-files/product/*.csv
+  - Warehouse: S3/data-files/warehouse/*.csv
+  - This is required to populate data in DynamoDB before querying
 ---
 ## How to run locally
 - `cd SharedLibrary` to enter the shared library folder
