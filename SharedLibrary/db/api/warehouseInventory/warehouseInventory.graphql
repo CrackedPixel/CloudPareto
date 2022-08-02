@@ -1,0 +1,41 @@
+input WarehouseInventoryReq {
+  warehouseInventory_id: String
+  warehouse_id: String
+  product_id: String
+  inventory: Int
+}
+
+type WarehouseInventory {
+  id: ID!
+  warehouseInventory_id: String!
+  warehouse_id: String!
+  product_id: String!
+  inventory: Int!
+}
+
+type WarehouseInventories {
+  prev: String
+  next: String
+  results: [WarehouseInventory!]
+}
+
+type WarehouseProductPriceValue {
+  price: Float!
+  inventory: Int!
+  total: Float!
+}
+
+type Query {
+  warehouseInventoryById(id: ID!): WarehouseInventory
+  warehouseInventories(first: Int, next: String, prev: String): WarehouseInventories!
+  warehouseInventoriesByWarehouseId(warehouse_id: String!, first: Int, next: String, prev: String): WarehouseInventories
+  warehouseInventoriesByProductId(product_id: String!, first: Int, next: String, prev: String): WarehouseInventories
+  warehouseInventoriesByWarehouseProductId(warehouse_id: String!, product_id: String!): WarehouseInventory
+  totalValueOfProductAtWarehouse(warehouse_id: String!, product_id: String!): WarehouseProductPriceValue
+}
+
+type Mutation {
+  createWarehouseInventory(WarehouseInventoryReq: WarehouseInventoryReq!): WarehouseInventory!
+  editWarehouseInventory(id: ID!, warehouseReq: WarehouseInventoryReq!): WarehouseInventory
+  removeWarehouseInventory(id: ID!): WarehouseInventory
+}

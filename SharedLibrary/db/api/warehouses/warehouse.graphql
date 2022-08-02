@@ -1,0 +1,38 @@
+input warehouseReq {
+  warehouse_id: String
+  name: String
+  address: String
+  city: String
+  state: String
+  zipcode: String
+  phonenumber: String
+}
+
+type Warehouse {
+  id: ID!
+  warehouse_id: String!
+  name: String!
+  address: String!
+  city: String!
+  state: String!
+  zipcode: String!
+  phonenumber: String!
+}
+
+type Warehouses {
+  prev: String
+  next: String
+  results: [Warehouse!]!
+}
+
+type Query {
+  warehouseById(id: ID!): Warehouse
+  warehouses(first: Int, next: String, prev: String): Warehouses!
+  warehouseByWarehouseId(warehouseId: String!): Warehouse
+}
+
+type Mutation {
+  createWarehouse(warehouseReq: warehouseReq!): Warehouse!
+  editWarehouse(id: ID!, warehouseReq: warehouseReq!): Warehouse
+  removeWarehouse(id: ID!): Warehouse
+}

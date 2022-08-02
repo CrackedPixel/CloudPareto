@@ -1,0 +1,171 @@
+service: cloudpareto
+
+#plugins:
+#  - serverless-webpack
+
+# Custom vars
+custom:
+  stage: ${opt:stage, 'development'}
+  region: ${opt:region, 'us-east-1'}
+  accountid: ${opt:accountId, '831191571104'} ## Account ID here ##
+  S3_MAIN: ${self:service}-data-files-${self:custom.stage}
+  API_MAIN: ${self:service}-API-CloudPareto-${self:custom.stage}
+  DYNAMO_MAIN: ${self:service}-DYNAMODB-${self:custom.stage}
+  SQS_INTAKECSV: ${self:service}-IntakeCSV-${self:custom.stage}
+
+# main data
+provider:
+  name: aws
+  region: ${self:custom.region}
+  iam:
+    role: arn:aws:iam::${self:custom.accountid}:role/temp-fullaccess
+  apiGateway:
+    shouldStartNameWithService: true
+
+  # environmental variables used in lambda functions
+  environment:
+    ACCOUNT_ID: ${self:custom.accountid}
+    REGION: ${self:custom.region}
+    ENVIRONMENT: ${self:custom.stage}
+    S3_MAIN: ${self:custom.S3_MAIN}
+    API_MAIN: ${self:custom.API_MAIN}
+    DYNAMODB_TABLE_NAME: ${self:custom.DYNAMO_MAIN}
+    SQS_QUEUE_INTAKE_CSV: ${self:custom.SQS_INTAKECSV}
+
+package:
+  individually: true
+  excludeDevDependencies: true
+  exclude:
+    - ./*
+
+functions:
+  API-CloudPareto:
+    name: ${self:custom.API_MAIN}
+    handler: API-CloudPareto/lambda.universal
+    runtime: nodejs16.x
+    memorySize: 768
+    timeout: 900
+    package:
+      include:
+        - SharedLibrary/**
+    events:
+      - http:
+          method: ANY
+          path: /
+          cors:
+            origin: '*'
+            headers:
+              - accept
+              - content-type
+              - token
+              - '*'
+      - http:
+          method: ANY
+          path: /{proxy+}
+          cors:
+            origin: '*'
+            headers:
+              - accept
+              - content-type
+              - token
+              - '*'
+#    architecture: arm64
+  Function-ProcessInputFile:
+    name: ${self:service}-Function-ProcessInputFile-${self:custom.stage}
+    description: "Used to read a single CSV and send data to SQS for further processing"
+    handler: Function-ProcessInputFile/lambda.universal
+    runtime: nodejs16.x
+    memorySize: 768
+    timeout: 900
+    package:
+      include:
+        - SharedLibrary/**
+    events:
+      - s3:
+          bucket: ${self:custom.S3_MAIN}
+          event: s3:ObjectCreated:*
+          existing: true # this will prevent a double creation, allowing us to have it on the resources section below
+          forceDeploy: true # requires "existing" -- used to workaround an AWS issue
+          rules:
+            - prefix: data-files/
+            - suffix: .csv
+#    architecture: arm64
+  Function-ProcessInputFileData:
+    name: ${self:service}-Function-ProcessInputFileData-${self:custom.stage}
+    description: "Used to process pieces of a CSV file and insert into DynamoDB"
+    handler: Function-ProcessInputFileData/lambda.universal
+    runtime: nodejs16.x
+    memorySize: 768
+    timeout: 900
+    reservedConcurrency: 10 # this is to limit how many run concurrently
+    package:
+      include:
+        - SharedLibrary/**
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - IntakeCSV
+              - Arn
+          batchSize: 1
+  #    architecture: arm64
+
+resources:
+  Resources:
+    S3MAIN:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.S3_MAIN}
+    IntakeCSV:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:custom.SQS_INTAKECSV}
+        VisibilityTimeout: 900
+    CloudParetoTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.DYNAMO_MAIN}
+        ProvisionedThroughput:
+          ReadCapacityUnits: 2
+          WriteCapacityUnits: 2
+        AttributeDefinitions:
+          - AttributeName: PK
+            AttributeType: S
+          - AttributeName: SK
+            AttributeType: S
+          - AttributeName: GS1PK
+            AttributeType: S
+          - AttributeName: GS1SK
+            AttributeType: S
+          - AttributeName: GS2PK
+            AttributeType: S
+          - AttributeName: GS2SK
+            AttributeType: S
+        KeySchema:
+          - AttributeName: PK
+            KeyType: HASH
+          - AttributeName: SK
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: gs1
+            KeySchema:
+            - AttributeName: GS1PK
+              KeyType: HASH
+            - AttributeName: GS1SK
+              KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 2
+              WriteCapacityUnits: 2
+          - IndexName: gs2
+            KeySchema:
+            - AttributeName: GS2PK
+              KeyType: HASH
+            - AttributeName: GS2SK
+              KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 2
+              WriteCapacityUnits: 2

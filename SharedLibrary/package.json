@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.141.0",
+    "@aws-sdk/client-lambda": "^3.141.0",
+    "@aws-sdk/client-s3": "^3.141.0",
+    "@aws-sdk/client-sqs": "^3.141.0",
+    "@fastify/aws-lambda": "^3.0.0",
+    "@graphql-tools/schema": "^8.5.1",
+    "dataloader": "^2.1.0",
+    "dynamodb-onetable": "^2.3.8",
+    "exceljs": "^4.3.0",
+    "fastify": "^4.3.0",
+    "graphql": "^16.5.0",
+    "lodash": "^4.17.21",
+    "mercurius": "^10.1.0"
+  },
+  "devDependencies": {}
+}
