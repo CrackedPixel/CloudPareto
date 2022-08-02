@@ -7,7 +7,7 @@ service: cloudpareto
 custom:
   stage: ${opt:stage, 'development'}
   region: ${opt:region, 'us-east-1'}
-  accountid: ${opt:accountId, '831191571104'} ## Account ID here ##
+  accountid: ${opt:accountId, 'Account ID here'} 
   S3_MAIN: ${self:service}-data-files-${self:custom.stage}
   API_MAIN: ${self:service}-API-CloudPareto-${self:custom.stage}
   DYNAMO_MAIN: ${self:service}-DYNAMODB-${self:custom.stage}

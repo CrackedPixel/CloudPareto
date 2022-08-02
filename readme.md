@@ -6,6 +6,8 @@ Cloud Pareto is a small business with a goal for expanding to a global market. W
 - `cd SharedLibrary` to enter the shared library folder
 - `yarn install` to install global dependencies
 - `cd ../` to get back to the root folder
+- edit the account id in `serverless.yml` (line 10)
+- (optional) change the service name in `serverless.yml` (line 1)
 - `sls deploy` to deploy to AWS. Optionally, use `--stage="example"` to change environments
 ---
 ## How to run locally
