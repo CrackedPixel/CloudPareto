@@ -17,7 +17,39 @@ Cloud Pareto is a small business with a goal for expanding to a global market. W
 - `node API-CloudPareto/local.js` to run the API locally. Nodemon can also be used
 - `node Function-XYZ/local.js` to run the function locally (requires manual edits to */local.js). Nodemon can also be used
 ---
-## Running tests
+## Checking case study
+### #1 - Total value of a product at a given warehouse
+```
+query {
+    totalValueOfProductAtWarehouse
+    (
+        warehouse_id: "warehouse#001"
+        product_id: "product#001"
+    )
+    {
+        price
+        inventory
+        total
+    }
+}
+```
+### #2 - List of warehouses that have a given product, and the stats for each
+```
+query {
+    warehouseInventoriesByProductId
+    (
+        product_id: "product#001"
+    )
+    {
+        results {
+            warehouse_id
+            inventory
+        }
+    }
+}
+```
+---
+## Running queries
 For this I recommed using something like Postman
 ### Product - CRUD
 ```
@@ -267,10 +299,9 @@ mutation {
     }
 }
 ```
-### Warehouse - Other queries to explore
+### Warehouse Inventory - Other queries to explore
 - warehouseInventoriesByProductId, accepts `product_id` as a parameter. returns `results`
 - warehouseInventoriesByWarehouseProductId, accepts both `product_id` and `warehouse_id` as parameters
-
 ---
 ### Contact us
 If you notice any bugs/glitches or have comments/suggestions, please reach out to your nearest Cloud Pareto representive.
